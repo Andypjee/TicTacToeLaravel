@@ -12,49 +12,57 @@ use Illuminate\View\View;
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * 🔹 Toon het formulier om het profiel te bewerken.
      */
     public function edit(Request $request): View
     {
+        // Haal de huidige ingelogde gebruiker op en stuur door naar de view
         return view('profile.edit', [
             'user' => $request->user(),
         ]);
     }
 
     /**
-     * Update the user's profile information.
+     * 🔹 Werk het profiel bij met gevalideerde data.
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
+        // Vul het User-model met de gevalideerde invoer
         $request->user()->fill($request->validated());
 
+        // Als het e-mailadres veranderd is, zet verificatie op null (verificatie opnieuw nodig)
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
         }
 
+        // Sla de wijzigingen op in de database
         $request->user()->save();
 
+        // Redirect terug naar het profielbewerkingsformulier met een statusmelding
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
     /**
-     * Delete the user's account.
+     * 🔹 Verwijder het account van de gebruiker.
      */
     public function destroy(Request $request): RedirectResponse
     {
+        // ✅ Valideer het wachtwoord van de gebruiker voor veiligheid
         $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current_password'],
         ]);
 
         $user = $request->user();
 
-        Auth::logout();
+        Auth::logout(); // Log de gebruiker uit
 
-        $user->delete();
+        $user->delete(); // Verwijder de gebruiker uit de database
 
+        // Vernietig en reset de sessie
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
+        // Redirect naar homepage na verwijdering
         return Redirect::to('/');
     }
 }

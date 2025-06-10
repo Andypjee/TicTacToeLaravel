@@ -15,14 +15,13 @@ return new class extends Migration {
             $table->foreignId('player_x_id')->constrained('players');
             $table->foreignId('player_o_id')->constrained('players');
             $table->foreignId('winner_id')->nullable()->constrained('players');
-            $table->enum('status', ['WAITING', 'ONGOING', 'FINISHED']);
+
+            $table->enum('status', ['pending', 'active', 'completed'])->default('pending');
+
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('games');
